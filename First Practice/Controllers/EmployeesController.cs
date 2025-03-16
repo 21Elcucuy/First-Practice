@@ -5,6 +5,10 @@ using First_Practice.Models.Domain;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using First_Practice.Repository;
+using First_Practice.AutoMap;
+using AutoMapper;
+using First_Practice.CustomActionFilter;
 
 namespace First_Practice.Controllers
 {
@@ -13,63 +17,81 @@ namespace First_Practice.Controllers
     public class EmployeesController : ControllerBase
     {
         private readonly DbContexts _dbContext;
-        public EmployeesController(DbContexts dbContexts)
+        private readonly IEmployeeRepository _employeeRepository;
+        private readonly IMapper mapper;
+        public EmployeesController(DbContexts dbContexts , IEmployeeRepository employeeRepository,IMapper mapper)
         {
             _dbContext = dbContexts;
+            this._employeeRepository = employeeRepository;
+            this.mapper = mapper;
         }
+        // /api/
         [HttpGet]
-        public IActionResult GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] string? FilterOn , [FromQuery] string? FilterQuery,
+            [FromQuery] string ?SortBy , [FromQuery] bool? isAscending ,
+            [FromQuery] int PageNumber = 1 , int PageSize = 1000)
         {
-            List<Employee> DbEmployeesDomain = _dbContext.Employee.ToList();
+            List<Employee> DbEmployeesDomain = await _employeeRepository.GetAllAsync(FilterOn, FilterQuery,SortBy,isAscending ?? true ,PageNumber,PageSize);
+
+            //var employeeDTO = mapper.Map<List<EmployeeDTO>>(DbEmployeesDomain);
 
             List<EmployeeDTO> employeeDTO = new List<EmployeeDTO>();
-            foreach (var DbEmployee in DbEmployeesDomain)
+            foreach(Employee DbEmployeeDomain in DbEmployeesDomain )
             {
-                employeeDTO.Add(new EmployeeDTO
+                EmployeeDTO employee = new EmployeeDTO
                 {
-                    Id = DbEmployee.Id,
-                    Name = DbEmployee.Name,
-                    Email = DbEmployee.Email,
-                    Phone = DbEmployee.Phone,
-                    DepartmentName = DbEmployee.DepartmentName,
-                });
-
+                    Id = DbEmployeeDomain.Id,
+                    Name = DbEmployeeDomain.Name,
+                    Email = DbEmployeeDomain.Email,
+                    Phone = DbEmployeeDomain.Phone,
+                    Department = await _employeeRepository.GetDepartmentAsync(DbEmployeeDomain.DepartmentId)
+                };
+                employeeDTO.Add(employee);
             }
-            return Ok(employeeDTO);
+  
+                return Ok(employeeDTO);
         }
         [HttpGet]
         [Route("{Id}")]
-        public IActionResult GetAt([FromRoute]int Id)
+        public async Task<IActionResult> GetAt([FromRoute]int Id)
         {
-            var DbEmployeeDomain = _dbContext.Employee.FirstOrDefault(x => x.Id == Id);
+            var DbEmployeeDomain = await _employeeRepository.GetAtAsync(Id);
             if (DbEmployeeDomain == null)
             {
                 return NotFound();
             }
+            //EmployeeDTO employeeDTO = mapper.Map<EmployeeDTO>(DbEmployeeDomain);
             EmployeeDTO employeeDTO = new EmployeeDTO()
             {
                 Id = DbEmployeeDomain.Id,
                 Name = DbEmployeeDomain.Name,
                 Email = DbEmployeeDomain.Email,
                 Phone = DbEmployeeDomain.Phone,
-                DepartmentName = DbEmployeeDomain.DepartmentName
+                Department = await _employeeRepository.GetDepartmentAsync(DbEmployeeDomain.DepartmentId)
+
             };
             return Ok(employeeDTO);
 
         }
         [HttpPost]
-        public IActionResult Create([FromBody]AddEmployeeDTO addemployeeDTO)
+        [ValidateModel]
+        public async Task<IActionResult> Create([FromBody]AddEmployeeDTO addemployeeDTO)
         {
+            //Employee employeeModelDomain = mapper.Map<Employee>(addemployeeDTO);
+            
             Employee employeeModelDomain = new Employee()
             {
                 Name = addemployeeDTO.Name,
+                DepartmentId = addemployeeDTO.DepartmentId,
                 Email = addemployeeDTO.Email,
                 Phone = addemployeeDTO.Phone,
-                DepartmentName = addemployeeDTO.DepartmentName
+
             };
 
-            _dbContext.Employee.Add(employeeModelDomain);
-            _dbContext.SaveChanges();
+           await _employeeRepository.CreateAsync(employeeModelDomain);
+
+
+            //EmployeeDTO employeeDTO = mapper.Map<EmployeeDTO>(employeeModelDomain);
 
             EmployeeDTO employeeDTO = new EmployeeDTO()
             {
@@ -77,47 +99,58 @@ namespace First_Practice.Controllers
                 Name = employeeModelDomain.Name,
                 Email = employeeModelDomain.Email,
                 Phone = employeeModelDomain.Phone,
-                DepartmentName = employeeModelDomain.DepartmentName
+                Department = await _employeeRepository.GetDepartmentAsync(employeeModelDomain.DepartmentId)
+
             };
-
+         
             return CreatedAtAction(nameof(GetAt) ,  new { Id = employeeDTO.Id }  , employeeDTO );
-
+            
+         
         }
         [HttpPut]
         [Route("{Id}")]
-        public IActionResult Update([FromRoute] int Id, [FromBody] UpdateEmployeeDTO updateEmployeeDTO)
+        [ValidateModel]
+        public async Task<IActionResult> Update([FromRoute] int Id, [FromBody] UpdateEmployeeDTO updateEmployeeDTO)
         {
-           var employeeModelDomain = _dbContext.Employee.FirstOrDefault(x  => x.Id == Id);
-            if (employeeModelDomain == null)
+            //var employeeModelDomain = mapper.Map<Employee>(updateEmployeeDTO);
+            Employee employeeModelDomain = new Employee()
+            {
+                Name = updateEmployeeDTO.Name, 
+                DepartmentId = updateEmployeeDTO.DepartmentId,
+                Email = updateEmployeeDTO.Email,
+                Phone = updateEmployeeDTO.Phone,
+
+            };
+            var newemployeeModelDomain =await _employeeRepository.UpdateAsync(Id,employeeModelDomain);
+
+            if (newemployeeModelDomain == null)
             {
                 return NotFound();
             }
-           employeeModelDomain.Phone = updateEmployeeDTO.Phone;
-           employeeModelDomain.Email = updateEmployeeDTO.Email;
-           employeeModelDomain.DepartmentName = updateEmployeeDTO.DepartmentName;
 
-
+            //EmployeeDTO employeeDTO = mapper.Map<EmployeeDTO>(newemployeeModelDomain);
             EmployeeDTO employeeDTO = new EmployeeDTO()
             {
-                Id = employeeModelDomain.Id,
-                Name = employeeModelDomain.Name,
-                Email = employeeModelDomain.Email,
-                Phone = employeeModelDomain.Phone,
-                DepartmentName = employeeModelDomain.DepartmentName
+                Id = newemployeeModelDomain.Id,
+                Name = newemployeeModelDomain.Name,
+                Email = newemployeeModelDomain.Email,
+                Phone = newemployeeModelDomain.Phone,
+                Department = await _employeeRepository.GetDepartmentAsync(newemployeeModelDomain.DepartmentId)
+
             };
+
+
             return Ok(employeeDTO);
         }
         [HttpDelete]
         [Route("{Id}")]
-        public IActionResult Delete([FromRoute] int Id)
+        public async Task<IActionResult> Delete([FromRoute] int Id)
         {
-            var employeeModelDomain = _dbContext.Employee.FirstOrDefault(x=> x.Id ==Id);
+             var employeeModelDomain = await _employeeRepository.DeleteAsync(Id);
              if(employeeModelDomain == null)
             {
                 return NotFound();
             }
-            _dbContext.Employee.Remove(employeeModelDomain);
-            _dbContext.SaveChanges();
 
             EmployeeDTO employeeDTO = new EmployeeDTO()
             {
@@ -125,8 +158,10 @@ namespace First_Practice.Controllers
                 Name = employeeModelDomain.Name,
                 Email = employeeModelDomain.Email,
                 Phone = employeeModelDomain.Phone,
-                DepartmentName = employeeModelDomain.DepartmentName
+                Department = await _employeeRepository.GetDepartmentAsync(employeeModelDomain.DepartmentId)
+
             };
+
             return Ok(employeeDTO);
 
         }

@@ -8,7 +8,10 @@
         public string? Email {  get; set; }
         public string? Phone { get; set; }
     
-        public string DepartmentName { get; set; }
+        public int DepartmentId { get; set; }
 
+
+        //Navifation
+        public Department Department { get; set; }
     }
 }

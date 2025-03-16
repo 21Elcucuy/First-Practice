@@ -1,4 +1,6 @@
+using First_Practice.AutoMap;
 using First_Practice.Data;
+using First_Practice.Repository;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,6 +12,11 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<DbContexts>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("connectionString")));
+
+builder.Services.AddScoped<IEmployeeRepository,SQLEmployeeRepository>();
+
+builder.Services.AddAutoMapper(typeof(AutoMappingProfile));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
