@@ -88,6 +88,7 @@ namespace First_Practice.Repository
             {
                 return null;
             }
+            EmployeeDomain.Name = employee.Name;    
             EmployeeDomain.Email = employee.Email;
             EmployeeDomain.Phone = employee.Phone;
             EmployeeDomain.DepartmentId = employee.DepartmentId;
