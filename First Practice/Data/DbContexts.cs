@@ -5,13 +5,14 @@ namespace First_Practice.Data
 {
     public class DbContexts : DbContext
     {
-        public DbContexts(DbContextOptions<DbContext> option) : base(option)
+        public DbContexts(DbContextOptions<DbContexts> option) : base(option)
         {
         }
         public DbSet<Employee> Employee { get; set; }
 
         public DbSet<Department> Department { get; set; }
 
+        public DbSet<Image> Image { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

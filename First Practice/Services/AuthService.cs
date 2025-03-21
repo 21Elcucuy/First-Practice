@@ -7,6 +7,7 @@ using First_Practice.Models;
 using First_Practice.Models.Domain;
 using First_Practice.Models.DTO;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Win32;
 
@@ -18,10 +19,10 @@ namespace First_Practice.Services
         private readonly JWT _jwt;
         private readonly RoleManager<IdentityRole> _roleManager;
 
-        public AuthService(UserManager<ApplicationUser> userManager ,JWT jwt , RoleManager<IdentityRole> roleManager) 
+        public AuthService(UserManager<ApplicationUser> userManager ,IOptions<JWT> jwt , RoleManager<IdentityRole> roleManager) 
         {
          _userManager = userManager;
-           _jwt = jwt;
+           _jwt = jwt.Value;
             _roleManager = roleManager;
         }
 
@@ -62,7 +63,7 @@ namespace First_Practice.Services
         public async Task<AuthModel> Login(LoginDTO login)
         {
             var user = await _userManager.FindByEmailAsync(login.Email);
-            if (user is null || await _userManager.CheckPasswordAsync(user, login.Password))
+            if (user is null || !await _userManager.CheckPasswordAsync(user, login.Password))
                 return new AuthModel { Message  = "Email or password is incorrect"};
            var jwtSecurityToken =  await GenerateToken(user);
             var roles = await _userManager.GetRolesAsync(user);
