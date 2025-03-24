@@ -12,8 +12,16 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var looger = new LoggerConfiguration().WriteTo.Console().
+    WriteTo.File("Logs/Loggingin.txt", rollingInterval: RollingInterval.Minute).MinimumLevel.Information().CreateLogger();
+
+
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(looger);
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -102,7 +110,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseAuthentication();
+
 app.UseAuthorization();
 app.UseStaticFiles(new StaticFileOptions
 {
