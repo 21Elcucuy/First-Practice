@@ -28,7 +28,7 @@ namespace First_Practice.Controllers
         }
         // /api/
         [HttpGet]
-        [Authorize(Roles = "Admin,User")]
+        //[Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> GetAll([FromQuery] string? FilterOn , [FromQuery] string? FilterQuery,
             [FromQuery] string ?SortBy , [FromQuery] bool? isAscending ,
             [FromQuery] int PageNumber = 1 , int PageSize = 1000)
@@ -55,7 +55,7 @@ namespace First_Practice.Controllers
         }
         [HttpGet]
         [Route("{Id}")]
-        [Authorize(Roles = "Admin,User")]
+        //[Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> GetAt([FromRoute]int Id)
         {
             var DbEmployeeDomain = await _employeeRepository.GetAtAsync(Id);
@@ -78,7 +78,7 @@ namespace First_Practice.Controllers
         }
         [HttpPost]
         [ValidateModel]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody]AddEmployeeDTO addemployeeDTO)
         {
             //Employee employeeModelDomain = mapper.Map<Employee>(addemployeeDTO);
@@ -114,7 +114,7 @@ namespace First_Practice.Controllers
         [HttpPut]
         [Route("{Id}")]
         [ValidateModel]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update([FromRoute] int Id, [FromBody] UpdateEmployeeDTO updateEmployeeDTO)
         {
             //var employeeModelDomain = mapper.Map<Employee>(updateEmployeeDTO);
@@ -149,7 +149,7 @@ namespace First_Practice.Controllers
         }
         [HttpDelete]
         [Route("{Id}")]
-        [Authorize(Roles = "Admin")]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete([FromRoute] int Id)
         {
              var employeeModelDomain = await _employeeRepository.DeleteAsync(Id);

@@ -1,0 +1,27 @@
+﻿@model IEnumerable<PracticeUI.Models.DTO. EmployeeDTO>
+@{
+}
+<h1 class="bg-gray-800 text-white p-4" > Employees  </h1>
+
+
+<table class="table table-boarded">
+	<thead>
+		<th>Id</th>
+		<th>Name</th>
+		<th>Email</th>
+		<th>Phone</th>
+		<th>Department Name</th>
+	</thead>
+	<tbody>
+		@foreach(var emp in Model)
+		{
+			<tr>
+			<td>@emp.Id</td>
+			<td>@emp.Name</td>
+			<td>@emp.Email</td>
+			<td>@emp.Phone</td>
+			<td>@emp.Department.Name</td>
+			</tr>
+		}
+		</tbody>
+</table>
