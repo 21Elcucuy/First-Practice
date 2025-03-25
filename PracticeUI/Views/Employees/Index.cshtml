@@ -3,6 +3,9 @@
 }
 <h1 class="bg-gray-800 text-white p-4" > Employees  </h1>
 
+<div class="d-flex justify-content-end">
+   <a class="btn btn-secondary"asp-controller="Employees" asp-action="Add">Add Employee</a>
+</div>
 
 <table class="table table-boarded">
 	<thead>
@@ -13,15 +16,18 @@
 		<th>Department Name</th>
 	</thead>
 	<tbody>
-		@foreach(var emp in Model)
-		{
+	@foreach(var emp in Model)
+	{
 			<tr>
 			<td>@emp.Id</td>
 			<td>@emp.Name</td>
 			<td>@emp.Email</td>
 			<td>@emp.Phone</td>
 			<td>@emp.Department.Name</td>
+			<td>
+				<a asp-controller="Employees" asp-action="Edit" asp-route-id="@emp.Id" class="btn btn-light">Edit</a>
+			</td>
 			</tr>
-		}
+	}
 		</tbody>
 </table>
